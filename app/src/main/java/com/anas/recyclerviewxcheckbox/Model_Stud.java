@@ -4,8 +4,9 @@ public class Model_Stud {
     int Stud_img;
     String Stud_name,Stud_uid;
 
-
-    public Model_Stud() {
+    public Model_Stud(String stud_name, String stud_uid) {
+        Stud_name = stud_name;
+        Stud_uid = stud_uid;
     }
 
     public Model_Stud(int stud_img, String stud_name, String stud_uid) {

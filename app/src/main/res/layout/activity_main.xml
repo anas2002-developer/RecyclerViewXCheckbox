@@ -22,4 +22,13 @@
         android:layout_alignParentBottom="true"
         android:id="@+id/btnRV" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fbtn"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="40dp"
+        android:layout_marginBottom="70dp" />
+
 </RelativeLayout>
