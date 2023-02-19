@@ -1,46 +1,71 @@
 package com.anas.recyclerviewxcheckbox;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     RecyclerView vRV;
     Button btnRV;
-    ArrayList<Model_Stud> arrStud = new ArrayList<>();
+    ArrayList<Model_Stud> arrStud;
+//    = new ArrayList<>();
     Adapter_Stud adapter_stud;
+
+    File filePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
         vRV=findViewById(R.id.vRV);
         btnRV=findViewById(R.id.btnRV);
         vRV.setLayoutManager(new LinearLayoutManager(this));
 
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Anas","21BCS8965"));
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"bas","21BCS8965"));
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"dfsdf","21BCS8965"));
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"sfddf","21BCS8965"));
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"sdfas","21BCS8965"));
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"sdfa","21BCS8965"));
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"sdf","21BCS8965"));
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"gfd","21BCS8965"));
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"ewrf","21BCS8965"));
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"fdeer","21BCS8965"));
-        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Anas","21BCS8965"));
+        LoadRecycler();
+
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Anas","21BCS8965"));
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Shruti","21BCS8965"));
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Shreya","21BCS8965"));
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Palki","21BCS8965"));
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Muskan","21BCS8965"));
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Priyanshi","21BCS8965"));
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Karishma","21BCS8965"));
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Anabia","21BCS8965"));
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Mahira","21BCS8965"));
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Ananya","21BCS8965"));
+//        arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Ashmi","21BCS8965"));
+
 
         adapter_stud = new Adapter_Stud(this,arrStud);
         vRV.setAdapter(adapter_stud);
@@ -53,35 +78,34 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 creationOfDialog();
-
             }
         });
 
 
+        ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}
+                , PackageManager.PERMISSION_GRANTED);
         findViewById(R.id.fbtn).setOnClickListener(new View.OnClickListener() {
-            String txtToastname="";
-            String txtToastuid="";
             @Override
             public void onClick(View v) {
-                for (Model_Stud model_stud : adapter_stud.arrStud_name){
-                    txtToastname += model_stud.getStud_name();
-                }
-                for (Model_Stud model_stud : adapter_stud.arrStud_name){
-                    txtToastuid += model_stud.getStud_uid();
-                }
 
-                if (adapter_stud.arrStud_name.size()>0) {
-                    Toast.makeText(MainActivity.this, txtToastname, Toast.LENGTH_SHORT).show();
-                    Toast.makeText(MainActivity.this, txtToastuid, Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    Toast.makeText(MainActivity.this, "Please Select Student", Toast.LENGTH_SHORT).show();
-                }
+                filePath = new File(Environment.getExternalStorageDirectory() + "/" + "720_MATHS"+ ".xls");
+
+
+                    if (!filePath.exists()) {
+                        createFile();
+                    }
+
+                    else{
+                        updateFile();
+
+                    }
+
 
             }
         });
 
     }
+
 
     private void creationOfDialog() {
         Dialog dialogCreate=new Dialog(MainActivity.this);
@@ -117,9 +141,132 @@ public class MainActivity extends AppCompatActivity {
                 adapter_stud.notifyItemInserted(arrStud.size()-1);
                 vRV.scrollToPosition(arrStud.size()-1);
 
+                save();
                 dialogCreate.dismiss();
             }
         });
         dialogCreate.show();
     }
+
+
+
+    private void createFile() {
+
+        try {
+            HSSFWorkbook hssfWorkbook = new HSSFWorkbook();
+            HSSFSheet hssfSheet = hssfWorkbook.createSheet("MATHS");
+
+            int firstRowNum = -1;
+
+            if (adapter_stud.arrStud_present.size()<1){
+                Toast.makeText(MainActivity.this, "Mark atleast 1 student", Toast.LENGTH_SHORT).show();
+            }
+            else {
+
+                for (Model_Stud model_stud : adapter_stud.arrStud_present){
+                    HSSFRow hssfRow = hssfSheet.createRow(++firstRowNum);
+                    hssfRow.createCell(0).setCellValue(model_stud.getStud_name());
+                    hssfRow.createCell(1).setCellValue(model_stud.getStud_uid());
+                    hssfRow.createCell(2).setCellValue("Present");
+                }
+                for (Model_Stud model_stud : adapter_stud.arrStud_absent){
+                    HSSFRow hssfRow = hssfSheet.createRow(++firstRowNum);
+                    hssfRow.createCell(0).setCellValue(model_stud.getStud_name());
+                    hssfRow.createCell(1).setCellValue(model_stud.getStud_uid());
+                    hssfRow.createCell(2).setCellValue("Absent");
+                }
+
+
+                filePath.createNewFile();
+                FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+                hssfWorkbook.write(fileOutputStream);
+                Toast.makeText(MainActivity.this, "File Createda", Toast.LENGTH_SHORT).show();
+
+                if (fileOutputStream != null) {
+                    fileOutputStream.flush();
+                    fileOutputStream.close();
+                }
+            }
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void updateFile(){
+
+        try {
+            FileInputStream fileInputStream = new FileInputStream(filePath);
+            HSSFWorkbook hssfWorkbook = new HSSFWorkbook(fileInputStream);
+            HSSFSheet hssfSheet = hssfWorkbook.getSheet("MATHS");
+            int lastRowNum = hssfSheet.getLastRowNum();
+
+            if (adapter_stud.arrStud_present.size()<1){
+                Toast.makeText(MainActivity.this, "Mark atleast 1 student", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                for (Model_Stud model_stud : adapter_stud.arrStud_present){
+                    HSSFRow hssfRow = hssfSheet.createRow(++lastRowNum);
+                    hssfRow.createCell(0).setCellValue(model_stud.getStud_name());
+                    hssfRow.createCell(1).setCellValue(model_stud.getStud_uid());
+                    hssfRow.createCell(2).setCellValue("Present");
+                }
+                for (Model_Stud model_stud : adapter_stud.arrStud_absent){
+                    HSSFRow hssfRow = hssfSheet.createRow(++lastRowNum);
+                    hssfRow.createCell(0).setCellValue(model_stud.getStud_name());
+                    hssfRow.createCell(1).setCellValue(model_stud.getStud_uid());
+                    hssfRow.createCell(2).setCellValue("Absent");
+                }
+
+
+                fileInputStream.close();
+
+                FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+                hssfWorkbook.write(fileOutputStream);
+                Toast.makeText(MainActivity.this, "File Updated", Toast.LENGTH_SHORT).show();
+                fileOutputStream.close();
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void LoadRecycler(){
+        SharedPreferences sp=getSharedPreferences("attendance",MODE_PRIVATE);
+        Gson gson=new Gson();
+        String json = sp.getString("attendee",null);
+        Type type = new TypeToken<ArrayList<Model_Stud>>(){}.getType();
+        arrStud = gson.fromJson(json,type);
+
+        if (arrStud == null){
+            arrStud = new ArrayList<>();
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Anas","21BCS8965"));
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Shruti","21BCS8965"));
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Shreya","21BCS8965"));
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Palki","21BCS8965"));
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Muskan","21BCS8965"));
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Priyanshi","21BCS8965"));
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Karishma","21BCS8965"));
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Anabia","21BCS8965"));
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Mahira","21BCS8965"));
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Ananya","21BCS8965"));
+            arrStud.add(new Model_Stud(R.drawable.ic_launcher_background,"Ashmi","21BCS8965"));
+
+        }
+    }
+
+    private void save(){
+        SharedPreferences sp = getSharedPreferences("attendance",MODE_PRIVATE);
+        SharedPreferences.Editor sp_editor = sp.edit();
+        Gson gson=new Gson();
+        String json = gson.toJson(arrStud);
+        sp_editor.putString("attendee",json);
+        sp_editor.apply();
+        Toast.makeText(MainActivity.this, "File Saved", Toast.LENGTH_SHORT).show();
+    }
+
 }

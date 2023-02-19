@@ -18,14 +18,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
-        android:text="Recycler View Button"
+        android:text="ADD"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
         android:id="@+id/btnRV" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/fbtn"
+        android:src="@drawable/plus"
+        app:tint="@color/white"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_marginRight="40dp"

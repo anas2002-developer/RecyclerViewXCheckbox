@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,7 +18,9 @@ public class Adapter_Stud extends RecyclerView.Adapter<Adapter_Stud.Stud_ViewHol
     Context context;
     ArrayList<Model_Stud> arrStud = new ArrayList<>();
 
-    ArrayList<Model_Stud> arrStud_name = new ArrayList<>();
+    ArrayList<Model_Stud> arrStud_present = new ArrayList<>();
+    ArrayList<Model_Stud> arrStud_absent = new ArrayList<>();
+
 
     public Adapter_Stud(Context context, ArrayList<Model_Stud> arrStud) {
         this.context = context;
@@ -39,6 +40,7 @@ public class Adapter_Stud extends RecyclerView.Adapter<Adapter_Stud.Stud_ViewHol
         holder.txtStud_name.setText(arrStud.get(position).getStud_name());
         holder.txtStud_uid.setText(arrStud.get(position).getStud_uid());
 
+        arrStud_absent.add(arrStud.get(position));
         holder.setItemClickListener(new ItemClickListener() {
             @Override
             public void onItemClick(View v, int pos) {
@@ -46,10 +48,8 @@ public class Adapter_Stud extends RecyclerView.Adapter<Adapter_Stud.Stud_ViewHol
                 CheckBox checkBox = (CheckBox) v;
 
                 if (checkBox.isChecked()){
-                    arrStud_name.add(arrStud.get(pos));
-                }
-                else{
-                    arrStud_name.remove(arrStud.get(pos));
+                    arrStud_present.add(arrStud.get(pos));
+                    arrStud_absent.remove(arrStud.get(pos));
                 }
             }
         });
