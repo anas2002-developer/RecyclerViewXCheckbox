@@ -171,7 +171,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 for (Model_Stud model_stud : adapter_stud.arrStud_absent){
                     HSSFRow hssfRow = hssfSheet.createRow(++firstRowNum);
-                    hssfRow.createCell(0).setCellValue(model_stud.getStud_name());
+                    hssfRow.createCell(0
+                    ).setCellValue(model_stud.getStud_name());
                     hssfRow.createCell(1).setCellValue(model_stud.getStud_uid());
                     hssfRow.createCell(2).setCellValue("Absent");
                 }
